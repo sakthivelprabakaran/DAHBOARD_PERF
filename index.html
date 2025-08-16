@@ -1,0 +1,3690 @@
+
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Manual Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --amazon-orange: #ff9900;
+            --amazon-blue: #146eb4;
+            --amazon-dark: #232f3e;
+            --surface-1: #ffffff;
+            --surface-2: #f9f9f9;
+            --surface-3: #f3f3f3;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-tertiary: #adb5bd;
+            --border-light: #e9ecef;
+        }
+        
+        [data-bs-theme="dark"] {
+            --surface-1: #212529;
+            --surface-2: #2c3034;
+            --surface-3: #373b3e;
+            --text-primary: #f8f9fa;
+            --text-secondary: #e9ecef;
+            --text-tertiary: #adb5bd;
+            --border-light: #495057;
+        }
+        
+        body {
+            font-family: 'Amazon Ember', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        .login-container {
+            max-width: 420px;
+            margin: 5vh auto;
+            background-color: var(--surface-1);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+        
+        .login-header {
+            background: linear-gradient(120deg, var(--amazon-dark), var(--amazon-blue));
+            color: white;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .login-header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: var(--surface-1);
+            border-radius: 50% 50% 0 0;
+            transform: translateY(50%);
+        }
+        
+        .login-form {
+            padding: 25px 30px 35px;
+        }
+        
+        .form-floating>label {
+            color: var(--text-secondary);
+        }
+        
+        .main-menu {
+            max-width: 1000px;
+            margin: 8vh auto;
+        }
+        
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        
+        @media (max-width: 992px) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .menu-card {
+            aspect-ratio: 4/3;
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 24px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: none;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .menu-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.05;
+            transition: opacity 0.3s ease;
+        }
+        
+        .menu-card:hover::before {
+            opacity: 0.1;
+        }
+        
+        .menu-card.execution::before {
+            background-image: url('https://placehold.co/400x300');
+        }
+        
+        .menu-card.audit::before {
+            background-image: url('https://placehold.co/400x300');
+        }
+        
+        .menu-card.status::before {
+            background-image: url('https://placehold.co/400x300');
+        }
+        
+        .menu-card i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            z-index: 1;
+        }
+        
+        .menu-card h4 {
+            font-weight: 700;
+            margin-bottom: 8px;
+            z-index: 1;
+        }
+        
+        .menu-card p {
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            z-index: 1;
+        }
+        
+        .execution {
+            background-color: var(--surface-1);
+            color: var(--amazon-orange);
+            border-left: 4px solid var(--amazon-orange);
+        }
+        
+        .audit {
+            background-color: var(--surface-1);
+            color: var(--amazon-blue);
+            border-left: 4px solid var(--amazon-blue);
+        }
+        
+        .status {
+            background-color: var(--surface-1);
+            color: var(--amazon-dark);
+            border-left: 4px solid var(--amazon-dark);
+        }
+        
+        .dashboard-container {
+            display: none;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            z-index: 1030;
+        }
+        
+        .navbar-brand img {
+            height: 30px;
+            margin-right: 8px;
+        }
+        
+        .nav-item .nav-link.active {
+            font-weight: 600;
+        }
+        
+        .side-navbar {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            bottom: 0;
+            width: 260px;
+            background-color: var(--surface-1);
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+            z-index: 1020;
+            transition: all 0.3s;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+        
+        .side-navbar .nav-link {
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin: 4px 12px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .side-navbar .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .side-navbar .nav-link:hover {
+            background-color: var(--surface-2);
+        }
+        
+        .side-navbar .nav-link.active {
+            background-color: var(--surface-3);
+            color: var(--amazon-orange);
+        }
+        
+        .side-navbar .divider {
+            height: 1px;
+            background-color: var(--border-light);
+            margin: 16px 16px;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            padding-top: 86px;
+            transition: all 0.3s;
+        }
+        
+        .navbar-toggler {
+            border: none;
+            padding: 0;
+        }
+        
+        @media (max-width: 992px) {
+            .side-navbar {
+                transform: translateX(-100%);
+            }
+            
+            .side-navbar.show {
+                transform: translateX(0);
+                box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+            background-color: var(--surface-1);
+            transition: box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+        }
+        
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--border-light);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .card-header h5 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        
+        .card-header .actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .form-floating>input:focus,
+        .form-floating>textarea:focus,
+        .form-floating>select:focus {
+            border-color: var(--amazon-orange);
+            box-shadow: 0 0 0 0.25rem rgba(255, 153, 0, 0.25);
+        }
+        
+        .btn-amazon {
+            background-color: var(--amazon-orange);
+            border-color: var(--amazon-orange);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .btn-amazon:hover, .btn-amazon:focus {
+            background-color: #e68a00;
+            border-color: #e68a00;
+            color: white;
+        }
+        
+        .btn-amazon-dark {
+            background-color: var(--amazon-dark);
+            border-color: var(--amazon-dark);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .btn-amazon-dark:hover, .btn-amazon-dark:focus {
+            background-color: #1a2433;
+            border-color: #1a2433;
+            color: white;
+        }
+        
+        .btn-amazon-blue {
+            background-color: var(--amazon-blue);
+            border-color: var(--amazon-blue);
+            color: white;
+            font-weight: 500;
+        }
+        
+        .btn-amazon-blue:hover, .btn-amazon-blue:focus {
+            background-color: #105c9e;
+            border-color: #105c9e;
+            color: white;
+        }
+        
+        .progress {
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .stat-card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            background-color: var(--surface-1);
+            height: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+        }
+        
+        .stat-card-value {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .stat-card-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .stat-card-icon {
+            font-size: 2rem;
+            opacity: 0.2;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        
+        .task-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .task-item {
+            background-color: var(--surface-1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+            border: 1px solid var(--border-light);
+        }
+        
+        .task-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border-color: var(--amazon-orange);
+        }
+        
+        .task-item h6 {
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .task-meta {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .task-meta i {
+            width: 16px;
+        }
+        
+        .task-progress {
+            margin-top: 10px;
+        }
+        
+        .table {
+            color: var(--text-primary);
+        }
+        
+        .table thead th {
+            font-weight: 600;
+            border-bottom-width: 1px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.03em;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: var(--surface-2);
+        }
+        
+        .stopwatch-widget {
+            background: linear-gradient(135deg, var(--amazon-dark), var(--amazon-blue));
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stopwatch-widget::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            z-index: 0;
+        }
+        
+        .stopwatch-time {
+            font-size: 3.2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stopwatch-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        
+        .task-tabs .nav-tabs {
+            border-bottom: none;
+            margin-bottom: 15px;
+        }
+        
+        .task-tabs .nav-link {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .task-tabs .nav-link:hover {
+            color: var(--text-primary);
+        }
+        
+        .task-tabs .nav-link.active {
+            background-color: var(--surface-3);
+            color: var(--amazon-orange);
+        }
+        
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            min-width: 40px;
+        }
+        
+        .priority-p0 {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .priority-p1 {
+            background-color: #fd7e14;
+            color: white;
+        }
+        
+        .priority-p2 {
+            background-color: #ffc107;
+            color: black;
+        }
+        
+        .priority-p3 {
+            background-color: #0dcaf0;
+            color: black;
+        }
+        
+        .priority-750 {
+            background-color: #6f42c1;
+            color: white;
+        }
+        
+        .priority-adhoc {
+            background-color: #20c997;
+            color: black;
+        }
+        
+        .session-overview {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            background-color: var(--surface-2);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .session-status {
+            flex: 0 0 auto;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            background-color: var(--amazon-orange);
+        }
+        
+        .session-info {
+            flex: 1 1 auto;
+        }
+        
+        .session-info h5 {
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        
+        .session-info p {
+            margin-bottom: 0;
+            color: var(--text-secondary);
+        }
+        
+        .session-actions {
+            flex: 0 0 auto;
+        }
+        
+        .test-step {
+            border-left: 4px solid var(--amazon-orange);
+            padding: 12px 16px;
+            background-color: var(--surface-2);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 12px;
+        }
+        
+        .test-step h6 {
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        
+        .test-step-description {
+            margin-bottom: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        .test-results-table {
+            overflow-x: auto;
+        }
+        
+        .test-results-table table {
+            min-width: 600px;
+        }
+        
+        .value-green {
+            color: #198754;
+            font-weight: 600;
+        }
+        
+        .value-yellow {
+            color: #ffc107;
+            font-weight: 600;
+        }
+        
+        .value-red {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .theme-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 30px;
+        }
+        
+        .theme-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .theme-slider {
+            background-color: var(--amazon-orange);
+        }
+        
+        input:checked + .theme-slider:before {
+            transform: translateX(30px);
+        }
+        
+        #loginScreen, #mainMenu, #executionDashboard, #auditDashboard, #projectStatusDashboard {
+            display: none;
+        }
+        
+        #loginScreen {
+            display: block;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            color: white;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .dropdown-notification {
+            width: 320px;
+            padding: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dropdown-notification .dropdown-header {
+            padding: 12px 16px;
+            background-color: var(--amazon-orange);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .dropdown-notification .dropdown-body {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+        
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+            transition: background-color 0.2s;
+        }
+        
+        .notification-item:hover {
+            background-color: var(--surface-2);
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+        
+        .notification-text {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+        
+        .notification-time {
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+        }
+        
+        .notification-item.unread {
+            border-left: 3px solid var(--amazon-orange);
+        }
+        
+        .notification-item.unread .notification-title {
+            color: var(--amazon-orange);
+        }
+        
+        .dropdown-notification .dropdown-footer {
+            padding: 8px 16px;
+            text-align: center;
+            border-top: 1px solid var(--border-light);
+            background-color: var(--surface-2);
+        }
+        
+        .test-case-item {
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+        
+        .test-case-item:hover {
+            border-color: var(--amazon-orange);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .test-case-header {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .test-case-header h6 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        
+        .test-case-body {
+            padding: 16px;
+            border-top: 1px solid var(--border-light);
+            display: none;
+        }
+        
+        .test-case-item.active .test-case-body {
+            display: block;
+        }
+        
+        .test-case-item.active {
+            border-color: var(--amazon-orange);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .app-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--surface-1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loader {
+            width: 64px;
+            height: 64px;
+            border: 8px solid var(--border-light);
+            border-radius: 50%;
+            border-top: 8px solid var(--amazon-orange);
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Loader -->
+    <div class="app-loader" id="appLoader">
+        <div class="loader"></div>
+        <h5>Loading Performance Dashboard...</h5>
+    </div>
+    
+    <!-- Login Screen -->
+    <div id="loginScreen">
+        <div class="login-container">
+            <div class="login-header">
+                <h2 class="text-center mb-2">Performance Manual Dashboard</h2>
+                <p class="text-center mb-0">Enter your credentials to continue</p>
+            </div>
+            <div class="login-form">
+                <form id="loginForm">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="username" placeholder="Amazon Username" required>
+                        <label for="username">Amazon Username</label>
+                    </div>
+                    <div class="form-floating mb-4">
+                        <input type="password" class="form-control" id="password" placeholder="Password" required>
+                        <label for="password">Password</label>
+                    </div>
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMe">
+                        <label class="form-check-label" for="rememberMe">Remember me</label>
+                    </div>
+                    <button type="submit" class="btn btn-amazon w-100 py-2">Sign In</button>
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Kindle Performance Testing Team Portal</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="mainMenu">
+        <div class="main-menu">
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h2 class="mb-2">Welcome, Sakthimx</h2>
+                    <p class="text-muted">Choose a module to start working with the dashboard</p>
+                </div>
+                <div>
+                    <button class="btn btn-amazon-dark" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
+                    <div class="d-inline-block ms-3">
+                        <label class="theme-switch">
+                            <input type="checkbox" id="themeSwitch">
+                            <span class="theme-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-grid">
+                <div class="menu-card execution" onclick="showDashboard('execution')">
+                    <i class="fas fa-play-circle"></i>
+                    <h4>Execution</h4>
+                    <p>Run performance tests with automated timing and tracking</p>
+                </div>
+                <div class="menu-card audit" onclick="showDashboard('audit')">
+                    <i class="fas fa-clipboard-check"></i>
+                    <h4>Audit & Report</h4>
+                    <p>Plan, review, and generate reports for test results</p>
+                </div>
+                <div class="menu-card status" onclick="showDashboard('status')">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Project Status</h4>
+                    <p>Monitor team productivity and project metrics</p>
+                </div>
+            </div>
+            
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-timeline">
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <span class="badge bg-primary rounded-pill p-2"><i class="fas fa-tasks"></i></span>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">New task assigned: Kindle Paperwhite - P1</h6>
+                                        <p class="text-muted mb-0">2 hours ago</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <span class="badge bg-success rounded-pill p-2"><i class="fas fa-check"></i></span>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Completed: Kindle Oasis - P0 Testing</h6>
+                                        <p class="text-muted mb-0">Yesterday at 2:45 PM</p>
+                                    </div>
+                                </div>
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <span class="badge bg-info rounded-pill p-2"><i class="fas fa-file-alt"></i></span>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Weekly report submitted for Project J18.2</h6>
+                                        <p class="text-muted mb-0">May 5, 2025</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Current Projects</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">J18.2</h6>
+                                    <span class="badge bg-success">Active</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">Progress</span>
+                                    <span class="text-muted small">68%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 68%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">K19.1</h6>
+                                    <span class="badge bg-warning text-dark">Planning</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">Progress</span>
+                                    <span class="text-muted small">12%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 12%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Execution Dashboard -->
+    <div id="executionDashboard" class="dashboard-container">
+        <nav class="navbar navbar-expand-lg fixed-top bg-body-tertiary">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <img src="https://placehold.co/60x30?text=Amazon" alt="Amazon">
+                    Performance Dashboard
+                </a>
+                <button class="navbar-toggler" type="button" id="sidebarToggler">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell fa-lg"></i>
+                                <span class="notification-badge">3</span>
+                            </a>
+                            <div class="dropdown-menu dropdown-notification dropdown-menu-end">
+                                <div class="dropdown-header">Notifications</div>
+                                <div class="dropdown-body">
+                                    <div class="notification-item unread">
+                                        <div class="notification-title">New Task Assigned</div>
+                                        <div class="notification-text">You've been assigned to test Kindle Paperwhite P1 priorities.</div>
+                                        <div class="notification-time">2 hours ago</div>
+                                    </div>
+                                    <div class="notification-item unread">
+                                        <div class="notification-title">Test Case Review Required</div>
+                                        <div class="notification-text">Your manager has requested a review of recent test cases.</div>
+                                        <div class="notification-time">Yesterday</div>
+                                    </div>
+                                    <div class="notification-item">
+                                        <div class="notification-title">Project J18.2 Updated</div>
+                                        <div class="notification-text">New build 6.4.0.2 is available for testing.</div>
+                                        <div class="notification-time">May 5, 2025</div>
+                                    </div>
+                                    <div class="notification-item">
+                                        <div class="notification-title">Weekly Meeting Reminder</div>
+                                        <div class="notification-text">Team sync meeting tomorrow at 10:00 AM.</div>
+                                        <div class="notification-time">May 5, 2025</div>
+                                    </div>
+                                </div>
+                                <div class="dropdown-footer">
+                                    <a href="#">View All Notifications</a>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Sakthimx
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" onclick="showMainMenu()"><i class="fas fa-th-large me-2"></i>Main Menu</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <div class="nav-link">
+                                <label class="theme-switch mb-0">
+                                    <input type="checkbox" id="themeSwitchNav">
+                                    <span class="theme-slider"></span>
+                                </label>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <div class="side-navbar" id="sideNavbar">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#" onclick="showExecutionTab('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showExecutionTab('new')">
+                        <i class="fas fa-plus-circle"></i> New Test Execution
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showExecutionTab('active')">
+                        <i class="fas fa-play"></i> Active Tests
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showExecutionTab('history')">
+                        <i class="fas fa-history"></i> Test History
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showDashboard('audit')">
+                        <i class="fas fa-clipboard-check"></i> Audit & Report
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showDashboard('status')">
+                        <i class="fas fa-chart-line"></i> Project Status
+                    </a>
+                </li>
+                <li class="divider"></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="showMainMenu()">
+                        <i class="fas fa-th-large"></i> Main Menu
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <!-- Execution Dashboard Tab -->
+            <div id="executionDashboardTab">
+                <h3 class="mb-4">Execution Dashboard</h3>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card p-3">
+                            <div class="stat-card-value">5</div>
+                            <div class="stat-card-label">Assigned Tasks</div>
+                            <i class="fas fa-tasks stat-card-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card p-3">
+                            <div class="stat-card-value">3</div>
+                            <div class="stat-card-label">In Progress</div>
+                            <i class="fas fa-spinner stat-card-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card p-3">
+                            <div class="stat-card-value">2</div>
+                            <div class="stat-card-label">Completed Today</div>
+                            <i class="fas fa-check-circle stat-card-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card p-3">
+                            <div class="stat-card-value">85</div>
+                            <div class="stat-card-label">N-Points Earned</div>
+                            <i class="fas fa-award stat-card-icon"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>My Tasks</h5>
+                                <div class="actions">
+                                    <button class="btn btn-sm btn-amazon" onclick="showExecutionTab('new')">
+                                        <i class="fas fa-plus me-2"></i>New Execution
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="task-tabs">
+                                    <ul class="nav nav-tabs" id="taskTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="inprogress-tab" data-bs-toggle="tab" data-bs-target="#inprogress" type="button" role="tab">In Progress</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">Pending</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed</button>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content" id="taskTabsContent">
+                                        <div class="tab-pane fade show active" id="inprogress" role="tabpanel">
+                                            <div class="task-list">
+                                                <div class="task-item">
+                                                    <h6>Kindle Paperwhite - P1 Testing</h6>
+                                                    <div class="task-meta">
+                                                        <span><i class="fas fa-layer-group"></i> Project: J18.2</span>
+                                                        <span><i class="fas fa-code-branch"></i> Build: 6.4.0.1</span>
+                                                    </div>
+                                                    <div class="task-progress mt-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <span class="small">Progress: 18/26 test cases</span>
+                                                            <span class="small">69%</span>
+                                                        </div>
+                                                        <div class="progress">
+                                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 69%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button class="btn btn-sm btn-amazon" onclick="continueExecution()">
+                                                            <i class="fas fa-play me-1"></i> Continue
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="task-item">
+                                                    <h6>Kindle Oasis - P2 Testing</h6>
+                                                    <div class="task-meta">
+                                                        <span><i class="fas fa-layer-group"></i> Project: J18.2</span>
+                                                        <span><i class="fas fa-code-branch"></i> Build: 6.4.0.1</span>
+                                                    </div>
+                                                    <div class="task-progress mt-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <span class="small">Progress: 12/43 test cases</span>
+                                                            <span class="small">28%</span>
+                                                        </div>
+                                                        <div class="progress">
+                                                            <div class="progress-bar bg-info" role="progressbar" style="width: 28%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button class="btn btn-sm btn-amazon" onclick="continueExecution()">
+                                                            <i class="fas fa-play me-1"></i> Continue
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="task-item">
+                                                    <h6>Kindle Basic - Adhoc Testing</h6>
+                                                    <div class="task-meta">
+                                                        <span><i class="fas fa-layer-group"></i> Project: K19.1</span>
+                                                        <span><i class="fas fa-code-branch"></i> Build: 5.9.8.2</span>
+                                                    </div>
+                                                    <div class="task-progress mt-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <span class="small">Progress: 2/5 test cases</span>
+                                                            <span class="small">40%</span>
+                                                        </div>
+                                                        <div class="progress">
+                                                            <div class="progress-bar bg-success" role="progressbar" style="width: 40%"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button class="btn btn-sm btn-amazon" onclick="continueExecution()">
+                                                            <i class="fas fa-play me-1"></i> Continue
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="pending" role="tabpanel">
+                                            <div class="task-list">
+                                                <div class="task-item">
+                                                    <h6>Kindle Paperwhite - P0 Testing</h6>
+                                                    <div class="task-meta">
+                                                        <span><i class="fas fa-layer-group"></i> Project: J18.2</span>
+                                                        <span><i class="fas fa-code-branch"></i> Build: 6.4.0.1</span>
+                                                    </div>
+                                                    <div class="task-progress mt-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <span class="small">Due: May 8, 2025</span>
+                                                            <span class="badge bg-warning text-dark">High Priority</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button class="btn btn-sm btn-amazon" onclick="startExecution()">
+                                                            <i class="fas fa-play me-1"></i> Start
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="task-item">
+                                                    <h6>Kindle Basic - P3 Testing</h6>
+                                                    <div class="task-meta">
+                                                        <span><i class="fas fa-layer-group"></i> Project: J18.2</span>
+                                                        <span><i class="fas fa-code-branch"></i> Build: 6.4.0.1</span>
+                                                    </div>
+                                                    <div class="task-progress mt-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <span class="small">Due: May 10, 2025</span>
+                                                            <span class="badge bg-info">Medium Priority</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button class="btn btn-sm btn-amazon" onclick="startExecution()">
+                                                            <i class="fas fa-play me-1"></i> Start
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade" id="completed" role="tabpanel">
+                                            <div class="task-list">
+                                                <div class="task-item">
+                                                    <h6>Kindle Oasis - P0 Testing</h6>
+                                                    <div class="task-meta">
+                                                        <span><i class="fas fa-layer-group"></i> Project: J18.2</span>
+                                                        <span><i class="fas fa-code-branch"></i> Build: 6.4.0.1</span>
+                                                        <span><i class="fas fa-calendar-check"></i> Completed: May 5, 2025</span>
+                                                    </div>
+                                                    <div class="task-progress mt-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <span class="small">N-Points Earned: 10</span>
+                                                            <span class="badge bg-success">Completed</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button class="btn btn-sm btn-outline-secondary me-2">
+                                                            <i class="fas fa-eye me-1"></i> View Results
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-redo me-1"></i> Retest
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div class="task-item">
+                                                    <h6>Kindle Paperwhite - 750 Testing</h6>
+                                                    <div class="task-meta">
+                                                        <span><i class="fas fa-layer-group"></i> Project: J18.2</span>
+                                                        <span><i class="fas fa-code-branch"></i> Build: 6.3.9.8</span>
+                                                        <span><i class="fas fa-calendar-check"></i> Completed: May 2, 2025</span>
+                                                    </div>
+                                                    <div class="task-progress mt-2">
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <span class="small">N-Points Earned: 24</span>
+                                                            <span class="badge bg-success">Completed</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex justify-content-end mt-3">
+                                                        <button class="btn btn-sm btn-outline-secondary me-2">
+                                                            <i class="fas fa-eye me-1"></i> View Results
+                                                        </button>
+                                                        <button class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-redo me-1"></i> Retest
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>My Productivity</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container mb-3">
+                                    <canvas id="productivityChart"></canvas>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div class="text-center">
+                                        <h5>358</h5>
+                                        <small class="text-muted">Total N-Points</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <h5>94%</h5>
+                                        <small class="text-muted">Pass Rate</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <h5>132</h5>
+                                        <small class="text-muted">Test Cases</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Recent Updates</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <span class="badge bg-info rounded-pill p-2"><i class="fas fa-sync-alt"></i></span>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">New Build Available</h6>
+                                        <p class="text-muted mb-0">J18.2 Build 6.4.0.2 is now ready for testing.</p>
+                                        <small class="text-muted">1 hour ago</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex mb-3">
+                                    <div class="flex-shrink-0">
+                                        <span class="badge bg-warning rounded-pill p-2"><i class="fas fa-exclamation-triangle"></i></span>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Testing Environment Update</h6>
+                                        <p class="text-muted mb-0">WiFi network "KindleTest" will be down for maintenance on May 7.</p>
+                                        <small class="text-muted">3 hours ago</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <span class="badge bg-primary rounded-pill p-2"><i class="fas fa-user-clock"></i></span>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6 class="mb-1">Team Meeting</h6>
+                                        <p class="text-muted mb-0">Weekly sync meeting tomorrow at 10:00 AM.</p>
+                                        <small class="text-muted">Yesterday</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- New Test Execution Tab -->
+            <div id="executionNewTab" style="display: none;">
+                <h3 class="mb-4">New Test Execution</h3>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Test Setup</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="projectSelect" class="form-label">Project</label>
+                                    <select class="form-select" id="projectSelect">
+                                        <option value="">Select Project</option>
+                                        <option value="J18.2">J18.2</option>
+                                        <option value="K19.1">K19.1</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="buildInput" class="form-label">Build</label>
+                                    <input type="text" class="form-control" id="buildInput" placeholder="e.g. 6.4.0.1">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="deviceSelect" class="form-label">Device</label>
+                                    <select class="form-select" id="deviceSelect">
+                                        <option value="">Select Device</option>
+                                        <option value="Kindle Paperwhite">Kindle Paperwhite</option>
+                                        <option value="Kindle Oasis">Kindle Oasis</option>
+                                        <option value="Kindle Basic">Kindle Basic</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="prioritySelect" class="form-label">Priority</label>
+                                    <select class="form-select" id="prioritySelect">
+                                        <option value="">Select Priority</option>
+                                        <option value="P0">P0</option>
+                                        <option value="P1">P1</option>
+                                        <option value="P2">P2</option>
+                                        <option value="P3">P3</option>
+                                        <option value="750">750</option>
+                                        <option value="Adhoc">Adhoc</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="adhocSection" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Adhoc test cases need additional details. Define your custom test scenarios below.
+                            </div>
+                            <div class="mb-3">
+                                <label for="adhocTestName" class="form-label">Test Case Name</label>
+                                <input type="text" class="form-control" id="adhocTestName" placeholder="e.g. Battery drain during page turn">
+                            </div>
+                            <div class="mb-3">
+                                <label for="adhocDescription" class="form-label">Description</label>
+                                <textarea class="form-control" id="adhocDescription" rows="3" placeholder="Describe the test case and expected results"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="adhocSteps" class="form-label">Test Steps</label>
+                                <textarea class="form-control" id="adhocSteps" rows="4" placeholder="List the steps to reproduce this test scenario"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="adhocIterations" class="form-label">Required Iterations</label>
+                                <input type="number" class="form-control" id="adhocIterations" min="1" max="10" value="3">
+                            </div>
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-amazon" id="addAdhocTestCase">
+                                    <i class="fas fa-plus me-2"></i>Add Test Case
+                                </button>
+                            </div>
+                            <div id="adhocTestCasesList" class="mb-3">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-outline-secondary" onclick="showExecutionTab('dashboard')">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </button>
+                            <button type="button" class="btn btn-amazon" onclick="createTestPlan()">
+                                <i class="fas fa-play me-2"></i>Create Test Plan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Active Test Execution Tab -->
+            <div id="executionActiveTab" style="display: none;">
+                <div class="session-overview">
+                    <div class="session-status">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <div class="session-info">
+                        <h5>Kindle Paperwhite - P1 Testing</h5>
+                        <p>Project: J18.2 | Build: 6.4.0.1 | 18 of 26 test cases completed</p>
+                    </div>
+                    <div class="session-actions">
+                        <button class="btn btn-outline-danger" onclick="pauseExecution()">
+                            <i class="fas fa-pause me-2"></i>Pause Session
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="stopwatch-widget">
+                            <div class="stopwatch-time" id="stopwatch">00:00:00.0</div>
+                            <div class="stopwatch-controls">
+                                <button class="btn btn-light px-4" id="startStopButton" onclick="toggleStopwatch()">
+                                    <i class="fas fa-play me-2"></i>Start
+                                </button>
+                                <button class="btn btn-success px-4" onclick="confirmIteration()">
+                                    <i class="fas fa-check me-2"></i>Confirm Iteration
+                                </button>
+                                <button class="btn btn-secondary px-4" onclick="resetStopwatch()">
+                                    <i class="fas fa-redo me-2"></i>Reset
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Test Results</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="test-results-table">
+                                    <table class="table table-bordered table-hover" id="resultTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Iteration</th>
+                                                <th>Time (ms)</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Iteration 1</td>
+                                                <td id="iter1">-</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Iteration 2</td>
+                                                <td id="iter2">-</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Iteration 3</td>
+                                                <td id="iter3">-</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr class="table-light">
+                                                <td><strong>Average</strong></td>
+                                                <td id="average">-</td>
+                                                <td></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="d-flex justify-content-between mt-3">
+                                    <button class="btn btn-outline-primary" onclick="addIteration()">
+                                        <i class="fas fa-plus me-2"></i>Add Iteration
+                                    </button>
+                                    <div>
+                                        <button class="btn btn-outline-warning me-2" onclick="addToReview()">
+                                            <i class="fas fa-flag me-2"></i>Flag for Review
+                                        </button>
+                                        <button class="btn btn-amazon" onclick="saveAndNext()">
+                                            <i class="fas fa-save me-2"></i>Save & Next
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <div class="d-flex">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-info-circle fa-lg mt-1"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="alert-heading">Test Notes</h6>
+                                            <p class="mb-0">Use the stopwatch to measure the time taken for each action. Click "Confirm Iteration" after each test is complete. You need at least 3 iterations for accurate results.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="testNotes" style="height: 100px" placeholder="Add notes about this test case"></textarea>
+                                        <label for="testNotes">Test Notes</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Test Cases</h5>
+                                <div class="actions">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="fas fa-filter me-1"></i> Filter
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#">All Test Cases</a></li>
+                                            <li><a class="dropdown-item" href="#">Completed</a></li>
+                                            <li><a class="dropdown-item" href="#">Pending</a></li>
+                                            <li><a class="dropdown-item" href="#">Flagged</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="input-group mb-3">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" placeholder="Search test cases...">
+                                </div>
+                                
+                                <div class="test-cases-list">
+                                    <div class="test-case-item active">
+                                        <div class="test-case-header" onclick="toggleTestCase(this)">
+                                            <div>
+                                                <h6>Time taken to open book</h6>
+                                                <span class="text-muted small">5 N-Points</span>
+                                            </div>
+                                            <div>
+                                                <span class="priority-badge priority-p1">P1</span>
+                                                <i class="fas fa-chevron-down ms-2"></i>
+                                            </div>
+                                        </div>
+                                        <div class="test-case-body">
+                                            <div class="test-step">
+                                                <h6>Step 1: Library selection</h6>
+                                                <p class="test-step-description">From home screen, navigate to your library</p>
+                                            </div>
+                                            <div class="test-step">
+                                                <h6>Step 2: Book selection</h6>
+                                                <p class="test-step-description">Select any book from your library</p>
+                                            </div>
+                                            <div class="test-step">
+                                                <h6>Step 3: Timing</h6>
+                                                <p class="test-step-description">Start timing when you tap the book, stop when the book fully opens and content is visible</p>
+                                            </div>
+                                            <div class="alert alert-warning mt-3">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                This test requires 3 iterations. Record each timing separately.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="test-case-item">
+                                        <div class="test-case-header" onclick="toggleTestCase(this)">
+                                            <div>
+                                                <h6>Time taken to turn a page</h6>
+                                                <span class="text-muted small">5 N-Points</span>
+                                            </div>
+                                            <div>
+                                                <span class="priority-badge priority-p1">P1</span>
+                                                <i class="fas fa-chevron-right ms-2"></i>
+                                            </div>
+                                        </div>
+                                        <div class="test-case-body">
+                                            <div class="test-step">
+                                                <h6>Step 1: Open a book</h6>
+                                                <p class="test-step-description">Navigate to your library and open any book</p>
+                                            </div>
+                                            <div class="test-step">
+                                                <h6>Step 2: Locate a page with text</h6>
+                                                <p class="test-step-description">Make sure you are on a page with a full page of text</p>
+                                            </div>
+                                            <div class="test-step">
+                                                <h6>Step 3: Turn page and time</h6>
+                                                <p class="test-step-description">Start timing when you tap/swipe to turn page, stop when the new page is fully rendered</p>
+                                            </div>
+                                            <div class="alert alert-warning mt-3">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                Use different books for each iteration to ensure reliable data.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="test-case-item">
+                                        <div class="test-case-header" onclick="toggleTestCase(this)">
+                                            <div>
+                                                <h6>Time taken to exit a book</h6>
+                                                <span class="text-muted small">3 N-Points</span>
+                                            </div>
+                                            <div>
+                                                <span class="priority-badge priority-p1">P1</span>
+                                                <i class="fas fa-chevron-right ms-2"></i>
+                                            </div>
+                                        </div>
+                                        <div class="test-case-body">
+                                            <!-- Test case content -->
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="test-case-item">
+                                        <div class="test-case-header" onclick="toggleTestCase(this)">
+                                            <div class="d-flex">
+                                                <div class="me-2 text-success">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div>
+                                                    <h6>Time to load library</h6>
+                                                    <span class="text-muted small">5 N-Points</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="priority-badge priority-p1">P1</span>
+                                                <i class="fas fa-chevron-right ms-2"></i>
+                                            </div>
+                                        </div>
+                                        <div class="test-case-body">
+                                            <!-- Test case content -->
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="test-case-item">
+                                        <div class="test-case-header" onclick="toggleTestCase(this)">
+                                            <div class="d-flex">
+                                                <div class="me-2 text-success">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </div>
+                                                <div>
+                                                    <h6>Book download time</h6>
+                                                    <span class="text-muted small">8 N-Points</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="priority-badge priority-p1">P1</span>
+                                                <i class="fas fa-chevron-right ms-2"></i>
+                                            </div>
+                                        </div>
+                                        <div class="test-case-body">
+                                            <!-- Test case content -->
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-4">
+                                    <div>
+                                        <span class="badge bg-success me-2">2 Completed</span>
+                                        <span class="badge bg-secondary me-2">3 Pending</span>
+                                        <span class="badge bg-primary">5 N-Points Earned</span>
+                                    </div>
+                                    <button class="btn btn-outline-success" onclick="completeAllTests()">
+                                        <i class="fas fa-check-double me-2"></i>Complete All Tests
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Performance Trends</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="performanceTrendChart"></canvas>
+                                </div>
+                                <div class="alert alert-success mt-3">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    <strong>Analysis:</strong> This test case is showing a consistent improvement of 8% compared to the previous build.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Test History Tab -->
+            <div id="executionHistoryTab" style="display: none;">
+                <h3 class="mb-4">Test History</h3>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Previous Executions</h5>
+                        <div class="actions">
+                            <button class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-filter me-1"></i> Filter
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary ms-2">
+                                <i class="fas fa-download me-1"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Project</th>
+                                        <th>Build</th>
+                                        <th>Device</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>N-Points</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>May 5, 2025</td>
+                                        <td>J18.2</td>
+                                        <td>6.4.0.1</td>
+                                        <td>Kindle Oasis</td>
+                                        <td><span class="priority-badge priority-p0">P0</span></td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                        <td>10</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" title="View Details"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-secondary ms-1" title="Export"><i class="fas fa-download"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>May 2, 2025</td>
+                                        <td>J18.2</td>
+                                        <td>6.3.9.8</td>
+                                        <td>Kindle Paperwhite</td>
+                                        <td><span class="priority-badge priority-750">750</span></td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                        <td>24</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" title="View Details"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-secondary ms-1" title="Export"><i class="fas fa-download"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Apr 30, 2025</td>
+                                        <td>J18.2</td>
+                                        <td>6.3.9.8</td>
+                                        <td>Kindle Oasis</td>
+                                        <td><span class="priority-badge priority-p1">P1</span></td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                        <td>42</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" title="View Details"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-secondary ms-1" title="Export"><i class="fas fa-download"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Apr 28, 2025</td>
+                                        <td>J18.2</td>
+                                        <td>6.3.9.5</td>
+                                        <td>Kindle Basic</td>
+                                        <td><span class="priority-badge priority-p2">P2</span></td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                        <td>21</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" title="View Details"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-secondary ms-1" title="Export"><i class="fas fa-download"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Apr 25, 2025</td>
+                                        <td>J18.2</td>
+                                        <td>6.3.9.5</td>
+                                        <td>Kindle Paperwhite</td>
+                                        <td><span class="priority-badge priority-p3">P3</span></td>
+                                        <td><span class="badge bg-success">Completed</span></td>
+                                        <td>32</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" title="View Details"><i class="fas fa-eye"></i></button>
+                                            <button class="btn btn-sm btn-outline-secondary ms-1" title="Export"><i class="fas fa-download"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <span class="text-muted">Showing 5 of 24 executions</span>
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">&laquo;</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">&raquo;</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Performance History</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <select class="form-select" id="deviceHistorySelect">
+                                    <option value="Kindle Paperwhite">Kindle Paperwhite</option>
+                                    <option value="Kindle Oasis">Kindle Oasis</option>
+                                    <option value="Kindle Basic">Kindle Basic</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <select class="form-select" id="metricHistorySelect">
+                                    <option>Book open time</option>
+                                    <option>Page turn time</option>
+                                    <option>Library load time</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="date" class="form-control" value="2025-04-01">
+                                    <span class="input-group-text">to</span>
+                                    <input type="date" class="form-control" value="2025-05-06">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-amazon w-100">Apply</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="performanceHistoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+	
+	<!-- Audit & Report Dashboard -->
+<div id="auditDashboard" class="dashboard-container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="https://placehold.co/60x30?text=Amazon" alt="Amazon">
+                Performance Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" id="auditSidebarToggler">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell fa-lg"></i>
+                            <span class="notification-badge">3</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-notification dropdown-menu-end">
+                            <div class="dropdown-header">Notifications</div>
+                            <div class="dropdown-body">
+                                <div class="notification-item unread">
+                                    <div class="notification-title">Report Review Required</div>
+                                    <div class="notification-text">A new performance report needs your review.</div>
+                                    <div class="notification-time">1 hour ago</div>
+                                </div>
+                                <div class="notification-item unread">
+                                    <div class="notification-title">Audit Scheduled</div>
+                                    <div class="notification-text">J18.2 audit meeting scheduled for tomorrow.</div>
+                                    <div class="notification-time">3 hours ago</div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notification-title">Report Approved</div>
+                                    <div class="notification-text">Your K19.1 performance report was approved.</div>
+                                    <div class="notification-time">Yesterday</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-footer">
+                                <a href="#">View All Notifications</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Sakthimx
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="showMainMenu()"><i class="fas fa-th-large me-2"></i>Main Menu</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link">
+                            <label class="theme-switch mb-0">
+                                <input type="checkbox" id="themeSwitchAudit">
+                                <span class="theme-slider"></span>
+                            </label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="side-navbar" id="auditSideNavbar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" onclick="showAuditTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showAuditTab('reports')">
+                    <i class="fas fa-file-alt"></i> Reports
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showAuditTab('review')">
+                    <i class="fas fa-search"></i> Test Review
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showAuditTab('planaudit')">
+                    <i class="fas fa-clipboard-list"></i> Test Planning
+                </a>
+            </li>
+            <li class="divider"></li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showDashboard('execution')">
+                    <i class="fas fa-play-circle"></i> Execution
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showDashboard('status')">
+                    <i class="fas fa-chart-line"></i> Project Status
+                </a>
+            </li>
+            <li class="divider"></li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showMainMenu()">
+                    <i class="fas fa-th-large"></i> Main Menu
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <!-- Audit Dashboard Overview Tab -->
+        <div id="auditDashboardTab">
+            <h3 class="mb-4">Audit & Report Dashboard</h3>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card p-3">
+                        <div class="stat-card-value">8</div>
+                        <div class="stat-card-label">Reports Generated</div>
+                        <i class="fas fa-file-alt stat-card-icon"></i>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3">
+                        <div class="stat-card-value">3</div>
+                        <div class="stat-card-label">Pending Reviews</div>
+                        <i class="fas fa-hourglass-half stat-card-icon"></i>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3">
+                        <div class="stat-card-value">14</div>
+                        <div class="stat-card-label">Issues Flagged</div>
+                        <i class="fas fa-exclamation-triangle stat-card-icon"></i>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3">
+                        <div class="stat-card-value">92%</div>
+                        <div class="stat-card-label">Pass Rate</div>
+                        <i class="fas fa-chart-pie stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Recent Reports</h5>
+                            <div class="actions">
+                                <button class="btn btn-sm btn-amazon" onclick="showAuditTab('reports')">
+                                    <i class="fas fa-plus me-2"></i>New Report
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Report Name</th>
+                                            <th>Project</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>J18.2 May Performance Review</td>
+                                            <td>Kindle J18.2</td>
+                                            <td>May 5, 2025</td>
+                                            <td><span class="badge bg-success">Approved</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary ms-1" title="Download"><i class="fas fa-download"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>K19.1 Beta Test Results</td>
+                                            <td>Kindle K19.1</td>
+                                            <td>May 3, 2025</td>
+                                            <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary ms-1" title="Download"><i class="fas fa-download"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Oasis User Experience Report</td>
+                                            <td>Kindle J18.2</td>
+                                            <td>Apr 28, 2025</td>
+                                            <td><span class="badge bg-success">Approved</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary ms-1" title="Download"><i class="fas fa-download"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Paperwhite Performance Audit</td>
+                                            <td>Kindle J18.2</td>
+                                            <td>Apr 25, 2025</td>
+                                            <td><span class="badge bg-success">Approved</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-secondary ms-1" title="Download"><i class="fas fa-download"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-end mt-3">
+                                <button class="btn btn-sm btn-amazon-blue">View All Reports</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Test Cases Requiring Review</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="task-list">
+                                <div class="task-item">
+                                    <div class="d-flex justify-content-between">
+                                        <h6>Book load time anomaly on Kindle Paperwhite</h6>
+                                        <span class="priority-badge priority-p0">P0</span>
+                                    </div>
+                                    <div class="task-meta">
+                                        <span><i class="fas fa-layer-group"></i> Project: J18.2</span>
+                                        <span><i class="fas fa-code-branch"></i> Build: 6.4.0.1</span>
+                                        <span><i class="fas fa-calendar-check"></i> Flagged: May 5, 2025</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i> Loading time increased by 42%</span>
+                                        <button class="btn btn-sm btn-amazon-blue">Review</button>
+                                    </div>
+                                </div>
+                                <div class="task-item">
+                                    <div class="d-flex justify-content-between">
+                                        <h6>Page turn latency on Kindle Oasis</h6>
+                                        <span class="priority-badge priority-p1">P1</span>
+                                    </div>
+                                    <div class="task-meta">
+                                        <span><i class="fas fa-layer-group"></i> Project: J18.2</span>
+                                        <span><i class="fas fa-code-branch"></i> Build: 6.4.0.1</span>
+                                        <span><i class="fas fa-calendar-check"></i> Flagged: May 4, 2025</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i> Inconsistent timing between iterations</span>
+                                        <button class="btn btn-sm btn-amazon-blue">Review</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Performance Trends</h5>
+                            <div class="actions">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Kindle Paperwhite
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">Kindle Paperwhite</a></li>
+                                        <li><a class="dropdown-item" href="#">Kindle Oasis</a></li>
+                                        <li><a class="dropdown-item" href="#">Kindle Basic</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="auditPerformanceChart"></canvas>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3">
+                                <div class="text-center">
+                                    <h5 class="value-green">-8.5%</h5>
+                                    <small class="text-muted">Book Load Time</small>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="value-green">-12.3%</h5>
+                                    <small class="text-muted">Page Turn Time</small>
+                                </div>
+                                <div class="text-center">
+                                    <h5 class="value-yellow">+2.1%</h5>
+                                    <small class="text-muted">Menu Response</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Test Coverage</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="auditCoverageChart"></canvas>
+                            </div>
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>P0 Test Cases</span>
+                                    <span>100% (12/12)</span>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>P1 Test Cases</span>
+                                    <span>87% (26/30)</span>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 87%"></div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>P2 Test Cases</span>
+                                    <span>68% (34/50)</span>
+                                </div>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 68%"></div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span>P3 Test Cases</span>
+                                    <span>42% (25/60)</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 42%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Upcoming Audits</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">J18.2 Final Review</h6>
+                                        <small class="text-muted">May 10, 2025 - 10:00 AM</small>
+                                    </div>
+                                    <span class="badge bg-amazon-orange rounded-pill">Tomorrow</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">K19.1 Performance Baseline</h6>
+                                        <small class="text-muted">May 15, 2025 - 2:30 PM</small>
+                                    </div>
+                                    <span class="badge bg-secondary rounded-pill">In 5 days</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Paperwhite New Build Review</h6>
+                                        <small class="text-muted">May 18, 2025 - 11:00 AM</small>
+                                    </div>
+                                    <span class="badge bg-secondary rounded-pill">In 8 days</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reports Tab -->
+        <div id="auditReportsTab" style="display: none;">
+            <h3 class="mb-4">Report Generation</h3>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5>Create New Report</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="reportName" class="form-label">Report Name</label>
+                                <input type="text" class="form-control" id="reportName" placeholder="e.g. J18.2 Performance Summary">
+                            </div>
+                            <div class="mb-3">
+                                <label for="reportProject" class="form-label">Project</label>
+                                <select class="form-select" id="reportProject">
+                                    <option value="">Select Project</option>
+                                    <option value="J18.2">J18.2</option>
+                                    <option value="K19.1">K19.1</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reportDevice" class="form-label">Device</label>
+                                <select class="form-select" id="reportDevice">
+                                    <option value="">All Devices</option>
+                                    <option value="Kindle Paperwhite">Kindle Paperwhite</option>
+                                    <option value="Kindle Oasis">Kindle Oasis</option>
+                                    <option value="Kindle Basic">Kindle Basic</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="reportDateRange" class="form-label">Date Range</label>
+                                <div class="input-group">
+                                    <input type="date" class="form-control" value="2025-04-01">
+                                    <span class="input-group-text">to</span>
+                                    <input type="date" class="form-control" value="2025-05-06">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reportFormat" class="form-label">Report Format</label>
+                                <select class="form-select" id="reportFormat">
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="html">HTML</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reportType" class="form-label">Report Type</label>
+                                <select class="form-select" id="reportType">
+                                    <option value="summary">Summary Report</option>
+                                    <option value="detailed">Detailed Report</option>
+                                    <option value="comparison">Comparison Report</option>
+                                    <option value="trend">Trend Analysis</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Report Sections</h6>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="secExecutiveSummary" checked>
+                            <label class="form-check-label" for="secExecutiveSummary">Executive Summary</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="secPerformanceMetrics" checked>
+                            <label class="form-check-label" for="secPerformanceMetrics">Performance Metrics</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="secTrends" checked>
+                            <label class="form-check-label" for="secTrends">Performance Trends</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="secIssues" checked>
+                            <label class="form-check-label" for="secIssues">Identified Issues</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="secRecommendations">
+                            <label class="form-check-label" for="secRecommendations">Recommendations</label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="secDetailedTestCases">
+                            <label class="form-check-label" for="secDetailedTestCases">Detailed Test Cases</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Report Preview</h6>
+                        <div class="card">
+                            <div class="card-body bg-light">
+                                <div class="chart-container" style="height: 200px;">
+                                    <canvas id="reportPreviewChart"></canvas>
+                                </div>
+                                <div class="mt-3 small text-muted">
+                                    <p><strong>This report will include:</strong> Data from 36 days (Apr 1 - May 6, 2025), covering approximately 152 test executions and 840 individual test cases.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="showAuditTab('dashboard')">
+                            Cancel
+                        </button>
+                        <div>
+                            <button type="button" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-eye me-1"></i> Preview
+                            </button>
+                            <button type="button" class="btn btn-amazon">
+                                <i class="fas fa-file-export me-1"></i> Generate Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5>Saved Report Templates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Template Name</th>
+                                    <th>Type</th>
+                                    <th>Last Used</th>
+                                    <th>Created By</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Weekly Performance Summary</td>
+                                    <td>Summary Report</td>
+                                    <td>May 1, 2025</td>
+                                    <td>Sakthimx</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" title="Use Template"><i class="fas fa-copy"></i></button>
+                                        <button class="btn btn-sm btn-outline-secondary ms-1" title="Edit"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger ms-1" title="Delete"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>P0/P1 Detailed Analysis</td>
+                                    <td>Detailed Report</td>
+                                    <td>Apr 23, 2025</td>
+                                    <td>Jane Smith</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" title="Use Template"><i class="fas fa-copy"></i></button>
+                                        <button class="btn btn-sm btn-outline-secondary ms-1" title="Edit"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger ms-1" title="Delete"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Build Comparison Template</td>
+                                    <td>Comparison Report</td>
+                                    <td>Apr 15, 2025</td>
+                                    <td>Robert Johnson</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" title="Use Template"><i class="fas fa-copy"></i></button>
+                                        <button class="btn btn-sm btn-outline-secondary ms-1" title="Edit"><i class="fas fa-edit"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger ms-1" title="Delete"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Test Review Tab -->
+        <div id="auditReviewTab" style="display: none;">
+            <h3 class="mb-4">Test Case Review</h3>
+            
+            <!-- Additional Test Review content here -->
+            <!-- This would include forms and tables for reviewing flagged tests -->
+        </div>
+        
+        <!-- Test Planning Tab -->
+        <div id="auditPlanAuditTab" style="display: none;">
+            <h3 class="mb-4">Test Planning</h3>
+            
+            <!-- Additional Test Planning content here -->
+            <!-- This would include planning tools for upcoming audits -->
+        </div>
+    </div>
+</div>
+
+<!-- Project Status Dashboard -->
+<div id="projectStatusDashboard" class="dashboard-container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="https://placehold.co/60x30?text=Amazon" alt="Amazon">
+                Performance Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" id="statusSidebarToggler">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell fa-lg"></i>
+                            <span class="notification-badge">3</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-notification dropdown-menu-end">
+                            <div class="dropdown-header">Notifications</div>
+                            <div class="dropdown-body">
+                                <div class="notification-item unread">
+                                    <div class="notification-title">Project Milestone Reached</div>
+                                    <div class="notification-text">J18.2 has reached 75% completion milestone.</div>
+                                    <div class="notification-time">5 hours ago</div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notification-title">Resource Allocation Update</div>
+                                    <div class="notification-text">New team members assigned to K19.1.</div>
+                                    <div class="notification-time">Yesterday</div>
+                                </div>
+                                <div class="notification-item">
+                                    <div class="notification-title">Timeline Updated</div>
+                                    <div class="notification-text">J18.2 target completion date adjusted to June 15.</div>
+                                    <div class="notification-time">May 3, 2025</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-footer">
+                                <a href="#">View All Notifications</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Sakthimx
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="showMainMenu()"><i class="fas fa-th-large me-2"></i>Main Menu</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link">
+                            <label class="theme-switch mb-0">
+                                <input type="checkbox" id="themeSwitchStatus">
+                                <span class="theme-slider"></span>
+                            </label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="side-navbar" id="statusSideNavbar">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" onclick="showStatusTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i> Overview
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showStatusTab('team')">
+                    <i class="fas fa-users"></i> Team Performance
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showStatusTab('timeline')">
+                    <i class="fas fa-calendar-alt"></i> Timeline
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showStatusTab('resources')">
+                    <i class="fas fa-cubes"></i> Resource Allocation
+                </a>
+            </li>
+            <li class="divider"></li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showDashboard('execution')">
+                    <i class="fas fa-play-circle"></i> Execution
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showDashboard('audit')">
+                    <i class="fas fa-clipboard-check"></i> Audit & Report
+                </a>
+            </li>
+            <li class="divider"></li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="showMainMenu()">
+                    <i class="fas fa-th-large"></i> Main Menu
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="main-content">
+        <!-- Project Status Dashboard Tab -->
+        <div id="statusDashboardTab">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="mb-0">Project Status Overview</h3>
+                <div class="d-flex">
+                    <select class="form-select me-2" style="width: auto;">
+                        <option>All Projects</option>
+                        <option>J18.2</option>
+                        <option>K19.1</option>
+                    </select>
+                    <button class="btn btn-sm btn-amazon-blue">
+                        <i class="fas fa-download me-2"></i>Export
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card p-3">
+                        <div class="stat-card-value">2</div>
+                        <div class="stat-card-label">Active Projects</div>
+                        <i class="fas fa-project-diagram stat-card-icon"></i>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3">
+                        <div class="stat-card-value">68%</div>
+                        <div class="stat-card-label">Overall Completion</div>
+                        <i class="fas fa-tasks stat-card-icon"></i>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3">
+                        <div class="stat-card-value">12</div>
+                        <div class="stat-card-label">Team Members</div>
+                        <i class="fas fa-users stat-card-icon"></i>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card p-3">
+                        <div class="stat-card-value">5</div>
+                        <div class="stat-card-label">Days to Milestone</div>
+                        <i class="fas fa-flag-checkered stat-card-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Project Progress</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h6 class="mb-0">J18.2 - Kindle Performance Optimization</h6>
+                                        <small class="text-muted">Target: June 15, 2025</small>
+                                    </div>
+                                    <span class="badge bg-success">On Track</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">Progress</span>
+                                    <span class="text-muted small">68%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 68%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-muted">Start: Mar 1, 2025</small>
+                                    <small class="text-muted">End: Jun 15, 2025</small>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h6 class="mb-0">K19.1 - New Product Development</h6>
+                                        <small class="text-muted">Target: Aug 30, 2025</small>
+                                    </div>
+                                    <span class="badge bg-warning text-dark">At Risk</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">Progress</span>
+                                    <span class="text-muted small">12%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 12%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-muted">Start: Apr 15, 2025</small>
+                                    <small class="text-muted">End: Aug 30, 2025</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Test Coverage by Device</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="deviceCoverageChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Team Productivity</h5>
+                            <div class="actions">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Last 30 Days
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                                        <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                                        <li><a class="dropdown-item" href="#">Last 90 Days</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="teamProductivityChart"></canvas>
+                            </div>
+                            <div class="d-flex justify-content-between mt-3">
+                                <div class="text-center">
+                                    <h5>1,245</h5>
+                                    <small class="text-muted">Total N-Points</small>
+                                </div>
+                                <div class="text-center">
+                                    <h5>87%</h5>
+                                    <small class="text-muted">Test Pass Rate</small>
+                                </div>
+                                <div class="text-center">
+                                    <h5>+12%</h5>
+                                    <small class="text-muted">vs. Previous Month</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5>Upcoming Milestones</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">J18.2 P0 Testing Completion</h6>
+                                        <small class="text-muted">May 12, 2025</small>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill">In 2 days</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">J18.2 Performance Report Delivery</h6>
+                                        <small class="text-muted">May 20, 2025</small>
+                                    </div>
+                                    <span class="badge bg-warning text-dark rounded-pill">In 10 days</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">K19.1 Initial Testing Phase</h6>
+                                        <small class="text-muted">May 30, 2025</small>
+                                    </div>
+                                    <span class="badge bg-secondary rounded-pill">In 20 days</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">J18.2 Final Release</h6>
+                                        <small class="text-muted">June 15, 2025</small>
+                                    </div>
+                                    <span class="badge bg-secondary rounded-pill">In 36 days</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Resource Allocation</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="resourceAllocationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Team Performance Tab -->
+        <div id="statusTeamTab" style="display: none;">
+            <h3 class="mb-4">Team Performance</h3>
+            
+            <!-- Additional Team Performance content here -->
+        </div>
+        
+        <!-- Timeline Tab -->
+        <div id="statusTimelineTab" style="display: none;">
+            <h3 class="mb-4">Project Timeline</h3>
+            
+            <!-- Additional Timeline content here -->
+        </div>
+        
+        <!-- Resources Tab -->
+        <div id="statusResourcesTab" style="display: none;">
+            <h3 class="mb-4">Resource Allocation</h3>
+            
+            <!-- Additional Resource content here -->
+        </div>
+    </div>
+</div>
+
+    <!-- Audit Dashboard and Project Status Dashboard would go here but omitted for brevity -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script>
+        // Hide app loader after a delay
+        setTimeout(function() {
+            document.getElementById('appLoader').style.display = 'none';
+        }, 1500);
+        
+        // Theme switching
+        const themeSwitch = document.getElementById('themeSwitch');
+        const themeSwitchNav = document.getElementById('themeSwitchNav');
+        
+        function toggleTheme() {
+            if (document.documentElement.getAttribute('data-bs-theme') === 'dark') {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                themeSwitch.checked = false;
+                themeSwitchNav.checked = false;
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                themeSwitch.checked = true;
+                themeSwitchNav.checked = true;
+            }
+        }
+        
+        themeSwitch.addEventListener('change', toggleTheme);
+        themeSwitchNav.addEventListener('change', toggleTheme);
+        
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainMenu').style.display = 'block';
+            
+            // Initialize charts when needed
+            initMainMenuCharts();
+        });
+        
+        function logout() {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('executionDashboard').style.display = 'none';
+            // Also hide audit and project status dashboards
+        }
+        
+        function showMainMenu() {
+            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('executionDashboard').style.display = 'none';
+            // Also hide audit and project status dashboards
+            
+            initMainMenuCharts();
+        }
+        
+        function showDashboard(type) {
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('executionDashboard').style.display = 'none';
+            // Hide other dashboard containers
+            
+            if (type === 'execution') {
+                document.getElementById('executionDashboard').style.display = 'block';
+                document.getElementById('executionDashboardTab').style.display = 'block';
+                document.getElementById('executionNewTab').style.display = 'none';
+                document.getElementById('executionActiveTab').style.display = 'none';
+                document.getElementById('executionHistoryTab').style.display = 'none';
+                
+                initExecutionCharts();
+            } else if (type === 'audit') {
+                // Show audit dashboard
+                alert('Audit & Report dashboard would appear here');
+            } else if (type === 'status') {
+                // Show project status dashboard
+                alert('Project Status dashboard would appear here');
+            }
+        }
+        
+        function showExecutionTab(tab) {
+            document.getElementById('executionDashboardTab').style.display = 'none';
+            document.getElementById('executionNewTab').style.display = 'none';
+            document.getElementById('executionActiveTab').style.display = 'none';
+            document.getElementById('executionHistoryTab').style.display = 'none';
+            
+            document.getElementById('execution' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Tab').style.display = 'block';
+            
+            // Update sidebar active state
+            const sidebarLinks = document.querySelectorAll('#sideNavbar .nav-link');
+            sidebarLinks.forEach(link => link.classList.remove('active'));
+            
+            if (tab === 'dashboard') {
+                sidebarLinks[0].classList.add('active');
+            } else if (tab === 'new') {
+                sidebarLinks[1].classList.add('active');
+            } else if (tab === 'active') {
+                sidebarLinks[2].classList.add('active');
+            } else if (tab === 'history') {
+                sidebarLinks[3].classList.add('active');
+            }
+            
+            // Initialize specific charts for the tab
+            if (tab === 'dashboard') {
+                initExecutionCharts();
+            } else if (tab === 'active') {
+                initActiveExecutionCharts();
+            } else if (tab === 'history') {
+                initHistoryCharts();
+            }
+        }
+        
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggler').addEventListener('click', function() {
+            document.getElementById('sideNavbar').classList.toggle('show');
+        });
+        
+        // Adhoc section toggle
+        document.getElementById('prioritySelect').addEventListener('change', function() {
+            if (this.value === 'Adhoc') {
+                document.getElementById('adhocSection').style.display = 'block';
+            } else {
+                document.getElementById('adhocSection').style.display = 'none';
+            }
+        });
+        
+        // Execution functions
+        function createTestPlan() {
+            const project = document.getElementById('projectSelect').value;
+            const build = document.getElementById('buildInput').value;
+            const device = document.getElementById('deviceSelect').value;
+            const priority = document.getElementById('prioritySelect').value;
+            
+            if (!project || !build || !device || !priority) {
+                alert('Please fill all fields to create a test plan');
+                return;
+            }
+            
+            showExecutionTab('active');
+        }
+        
+        function continueExecution() {
+            showExecutionTab('active');
+        }
+        
+        function startExecution() {
+            showExecutionTab('active');
+        }
+        
+        function pauseExecution() {
+            showExecutionTab('dashboard');
+        }
+        
+        function toggleTestCase(elem) {
+            const item = elem.closest('.test-case-item');
+            const items = document.querySelectorAll('.test-case-item');
+            
+            items.forEach(i => {
+                if (i !== item) {
+                    i.classList.remove('active');
+                    i.querySelector('.fa-chevron-down')?.classList.replace('fa-chevron-down', 'fa-chevron-right');
+                }
+            });
+            
+            item.classList.toggle('active');
+            
+            const icon = item.querySelector('.fa-chevron-right, .fa-chevron-down');
+            if (item.classList.contains('active')) {
+                icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+            } else {
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+            }
+        }
+        
+        // Stopwatch functionality
+        let stopwatchInterval;
+        let running = false;
+        let startTime;
+        let elapsedTime = 0;
+        
+        function toggleStopwatch() {
+            const button = document.getElementById('startStopButton');
+            if (!running) {
+                startTime = Date.now() - elapsedTime;
+                stopwatchInterval = setInterval(updateStopwatch, 100);
+                button.innerHTML = '<i class="fas fa-stop me-2"></i>Stop';
+                button.classList.remove('btn-light');
+                button.classList.add('btn-danger');
+                running = true;
+            } else {
+                clearInterval(stopwatchInterval);
+                button.innerHTML = '<i class="fas fa-play me-2"></i>Start';
+                button.classList.remove('btn-danger');
+                button.classList.add('btn-light');
+                running = false;
+            }
+        }
+        
+        function updateStopwatch() {
+            const now = Date.now();
+            elapsedTime = now - startTime;
+            const formattedTime = formatTime(elapsedTime);
+            document.getElementById('stopwatch').textContent = formattedTime;
+        }
+        
+        function formatTime(time) {
+            const date = new Date(time);
+            const hours = date.getUTCHours().toString().padStart(2, '0');
+            const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+            const seconds = date.getUTCSeconds().toString().padStart(2, '0');
+            const milliseconds = Math.floor(date.getUTCMilliseconds() / 100);
+            return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+        }
+        
+        function resetStopwatch() {
+            clearInterval(stopwatchInterval);
+            elapsedTime = 0;
+            document.getElementById('stopwatch').textContent = '00:00:00.0';
+            const button = document.getElementById('startStopButton');
+            button.innerHTML = '<i class="fas fa-play me-2"></i>Start';
+            button.classList.remove('btn-danger');
+            button.classList.add('btn-light');
+            running = false;
+        }
+        
+        // Test case iteration
+        let currentIteration = 1;
+        
+        function confirmIteration() {
+            if (!running) {
+                alert('Please stop the timer first');
+                return;
+            }
+            
+            // Get current time
+            const timeValue = document.getElementById('stopwatch').textContent;
+            
+            // Convert time to ms for display
+            const timeParts = timeValue.split(':');
+            const ms = parseInt(timeParts[0]) * 3600000 + 
+                      parseInt(timeParts[1]) * 60000 + 
+                      parseFloat(timeParts[2]) * 1000;
+            
+            // Update the table
+            document.getElementById(`iter${currentIteration}`).textContent = ms.toFixed(0);
+            
+            // Reset stopwatch
+            resetStopwatch();
+            
+            // Move to next iteration
+            currentIteration++;
+            
+            // Calculate average if all iterations are done
+            if (currentIteration > 3) {
+                calculateAverage();
+            }
+        }
+        
+        function calculateAverage() {
+            // Calculate actual average
+            let sum = 0;
+            let count = 0;
+            
+            for (let i = 1; i <= 3; i++) {
+                const value = document.getElementById(`iter${i}`).textContent;
+                if (value !== '-') {
+                    sum += parseInt(value);
+                    count++;
+                }
+            }
+            
+            if (count > 0) {
+                document.getElementById('average').textContent = Math.round(sum / count);
+            }
+        }
+        
+        function addIteration() {
+            const table = document.getElementById('resultTable');
+            const newRow = table.insertRow(table.rows.length - 1);
+            
+            const iterCell = newRow.insertCell(0);
+            const timeCell = newRow.insertCell(1);
+            const actionCell = newRow.insertCell(2);
+            
+            const iterNum = table.rows.length - 1;
+            iterCell.textContent = `Iteration ${iterNum}`;
+            timeCell.textContent = '-';
+            timeCell.id = `iter${iterNum}`;
+            actionCell.innerHTML = '<button class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>';
+        }
+        
+        function addToReview() {
+            const reason = prompt('Please provide a reason for reviewing this test case:');
+            if (reason) {
+                alert('Test case flagged for review. Your notes have been saved.');
+            }
+        }
+        
+        function saveAndNext() {
+            alert('Results saved successfully. Moving to next test case.');
+            
+            // Reset for next test
+            resetStopwatch();
+            currentIteration = 1;
+            
+            // Clear the table
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`iter${i}`).textContent = '-';
+            }
+            document.getElementById('average').textContent = '-';
+            
+            // Clear notes
+            document.getElementById('testNotes').value = '';
+        }
+        
+        function completeAllTests() {
+            if (confirm('Are you sure you want to mark all tests as complete? This action cannot be undone.')) {
+                alert('All tests marked as complete. Returning to dashboard.');
+                showExecutionTab('dashboard');
+            }
+        }
+        
+        // Chart initialization functions
+        function initMainMenuCharts() {
+            // Any charts needed for main menu
+        }
+        
+        function initExecutionCharts() {
+            // Productivity Chart
+            const productivityCtx = document.getElementById('productivityChart');
+            if (productivityCtx) {
+                new Chart(productivityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Today'],
+                        datasets: [{
+                            label: 'N-Points',
+                            data: [42, 65, 85, 72, 94, 0],
+                            borderColor: '#ff9900',
+                            backgroundColor: 'rgba(255, 153, 0, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    display: true,
+                                    drawBorder: false
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initActiveExecutionCharts() {
+            // Performance Trend Chart
+            const trendCtx = document.getElementById('performanceTrendChart');
+            if (trendCtx) {
+                new Chart(trendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Previous', 'Current', 'Baseline'],
+                        datasets: [{
+                            label: 'Time (ms)',
+                            data: [1250, 1150, 1200],
+                            backgroundColor: [
+                                'rgba(20, 110, 180, 0.7)',
+                                'rgba(255, 153, 0, 0.7)',
+                                'rgba(35, 47, 62, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(20, 110, 180, 1)',
+                                'rgba(255, 153, 0, 1)',
+                                'rgba(35, 47, 62, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                grid: {
+                                    display: true,
+                                    drawBorder: false
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function initHistoryCharts() {
+            // Performance History Chart
+            const historyCtx = document.getElementById('performanceHistoryChart');
+            if (historyCtx) {
+                new Chart(historyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Apr 1', 'Apr 8', 'Apr 15', 'Apr 22', 'Apr 29', 'May 6'],
+                        datasets: [{
+                            label: 'Book Open Time (ms)',
+                            data: [1280, 1250, 1230, 1180, 1150, 1180],
+                            borderColor: '#ff9900',
+                            backgroundColor: 'rgba(255, 153, 0, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Baseline',
+                            data: [1200, 1200, 1200, 1200, 1200, 1200],
+                            borderColor: '#232f3e',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                grid: {
+                                    display: true,
+                                    drawBorder: false
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                    drawBorder: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+		// Add this to the existing JavaScript to integrate the new dashboards
+
+// Theme sync for all dashboards
+const themeSwitchAudit = document.getElementById('themeSwitchAudit');
+const themeSwitchStatus = document.getElementById('themeSwitchStatus');
+
+themeSwitchAudit.addEventListener('change', toggleTheme);
+themeSwitchStatus.addEventListener('change', toggleTheme);
+
+// Sidebar toggle for mobile - Audit & Status dashboards
+document.getElementById('auditSidebarToggler')?.addEventListener('click', function() {
+    document.getElementById('auditSideNavbar').classList.toggle('show');
+});
+
+document.getElementById('statusSidebarToggler')?.addEventListener('click', function() {
+    document.getElementById('statusSideNavbar').classList.toggle('show');
+});
+
+// Navigation functions for Audit Dashboard
+function showAuditTab(tab) {
+    document.getElementById('auditDashboardTab').style.display = 'none';
+    document.getElementById('auditReportsTab').style.display = 'none';
+    document.getElementById('auditReviewTab').style.display = 'none';
+    document.getElementById('auditPlanAuditTab').style.display = 'none';
+    
+    document.getElementById('audit' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Tab').style.display = 'block';
+    
+    // Update sidebar active state
+    const sidebarLinks = document.querySelectorAll('#auditSideNavbar .nav-link');
+    sidebarLinks.forEach(link => link.classList.remove('active'));
+    
+    if (tab === 'dashboard') {
+        sidebarLinks[0].classList.add('active');
+        initAuditCharts();
+    } else if (tab === 'reports') {
+        sidebarLinks[1].classList.add('active');
+        initReportPreviewChart();
+    } else if (tab === 'review') {
+        sidebarLinks[2].classList.add('active');
+    } else if (tab === 'planaudit') {
+        sidebarLinks[3].classList.add('active');
+    }
+}
+
+// Navigation functions for Status Dashboard
+function showStatusTab(tab) {
+    document.getElementById('statusDashboardTab').style.display = 'none';
+    document.getElementById('statusTeamTab').style.display = 'none';
+    document.getElementById('statusTimelineTab').style.display = 'none';
+    document.getElementById('statusResourcesTab').style.display = 'none';
+    
+    document.getElementById('status' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Tab').style.display = 'block';
+    
+    // Update sidebar active state
+    const sidebarLinks = document.querySelectorAll('#statusSideNavbar .nav-link');
+    sidebarLinks.forEach(link => link.classList.remove('active'));
+    
+    if (tab === 'dashboard') {
+        sidebarLinks[0].classList.add('active');
+        initStatusCharts();
+    } else if (tab === 'team') {
+        sidebarLinks[1].classList.add('active');
+    } else if (tab === 'timeline') {
+        sidebarLinks[2].classList.add('active');
+    } else if (tab === 'resources') {
+        sidebarLinks[3].classList.add('active');
+    }
+}
+
+// Modify existing showDashboard function to handle the new dashboards
+function showDashboard(type) {
+    document.getElementById('mainMenu').style.display = 'none';
+    document.getElementById('executionDashboard').style.display = 'none';
+    document.getElementById('auditDashboard').style.display = 'none';
+    document.getElementById('projectStatusDashboard').style.display = 'none';
+    
+    if (type === 'execution') {
+        document.getElementById('executionDashboard').style.display = 'block';
+        document.getElementById('executionDashboardTab').style.display = 'block';
+        document.getElementById('executionNewTab').style.display = 'none';
+        document.getElementById('executionActiveTab').style.display = 'none';
+        document.getElementById('executionHistoryTab').style.display = 'none';
+        
+        initExecutionCharts();
+    } else if (type === 'audit') {
+        document.getElementById('auditDashboard').style.display = 'block';
+        document.getElementById('auditDashboardTab').style.display = 'block';
+        document.getElementById('auditReportsTab').style.display = 'none';
+        document.getElementById('auditReviewTab').style.display = 'none';
+        document.getElementById('auditPlanAuditTab').style.display = 'none';
+        
+        initAuditCharts();
+    } else if (type === 'status') {
+        document.getElementById('projectStatusDashboard').style.display = 'block';
+        document.getElementById('statusDashboardTab').style.display = 'block';
+        document.getElementById('statusTeamTab').style.display = 'none';
+        document.getElementById('statusTimelineTab').style.display = 'none';
+        document.getElementById('statusResourcesTab').style.display = 'none';
+        
+        initStatusCharts();
+    }
+}
+
+// Chart initialization for Audit Dashboard
+function initAuditCharts() {
+    // Performance Trend Chart for Audit
+    const auditPerformanceCtx = document.getElementById('auditPerformanceChart');
+    if (auditPerformanceCtx) {
+        new Chart(auditPerformanceCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mar', 'Apr', 'May'],
+                datasets: [{
+                    label: 'Book Load Time (ms)',
+                    data: [1280, 1250, 1150],
+                    borderColor: '#ff9900',
+                    backgroundColor: 'rgba(255, 153, 0, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Page Turn Time (ms)',
+                    data: [650, 620, 570],
+                    borderColor: '#146eb4',
+                    backgroundColor: 'rgba(20, 110, 180, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }, {
+                    label: 'Menu Response (ms)',
+                    data: [420, 410, 420],
+                    borderColor: '#232f3e',
+                    backgroundColor: 'rgba(35, 47, 62, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            display: true,
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Coverage Chart
+    const auditCoverageCtx = document.getElementById('auditCoverageChart');
+    if (auditCoverageCtx) {
+        new Chart(auditCoverageCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['P0 (100%)', 'P1 (87%)', 'P2 (68%)', 'P3 (42%)'],
+                datasets: [{
+                    data: [12, 26, 34, 25],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(0, 123, 255, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(220, 53, 69, 0.8)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Chart for Report Preview
+function initReportPreviewChart() {
+    const reportPreviewCtx = document.getElementById('reportPreviewChart');
+    if (reportPreviewCtx) {
+        new Chart(reportPreviewCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Book Load', 'Page Turn', 'Menu Open', 'Search', 'Download'],
+                datasets: [{
+                    label: 'Current Build',
+                    data: [1150, 570, 420, 850, 2400],
+                    backgroundColor: 'rgba(255, 153, 0, 0.7)',
+                    borderColor: 'rgba(255, 153, 0, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Previous Build',
+                    data: [1250, 620, 410, 920, 3100],
+                    backgroundColor: 'rgba(20, 110, 180, 0.7)',
+                    borderColor: 'rgba(20, 110, 180, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Time (ms)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Charts for Project Status Dashboard
+function initStatusCharts() {
+    // Team Productivity Chart
+    const teamProductivityCtx = document.getElementById('teamProductivityChart');
+    if (teamProductivityCtx) {
+        new Chart(teamProductivityCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'N-Points',
+                    data: [280, 320, 350, 295],
+                    borderColor: '#ff9900',
+                    backgroundColor: 'rgba(255, 153, 0, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: true,
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Device Coverage Chart
+    const deviceCoverageCtx = document.getElementById('deviceCoverageChart');
+    if (deviceCoverageCtx) {
+        new Chart(deviceCoverageCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Kindle Paperwhite', 'Kindle Oasis', 'Kindle Basic'],
+                datasets: [{
+                    data: [45, 35, 20],
+                    backgroundColor: [
+                        'rgba(255, 153, 0, 0.7)',
+                        'rgba(20, 110, 180, 0.7)',
+                        'rgba(35, 47, 62, 0.7)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Resource Allocation Chart
+    const resourceAllocationCtx = document.getElementById('resourceAllocationChart');
+    if (resourceAllocationCtx) {
+        new Chart(resourceAllocationCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+                datasets: [{
+                    label: 'J18.2',
+                    data: [8, 7, 6, 5, 4],
+                    backgroundColor: 'rgba(20, 110, 180, 0.7)',
+                    borderColor: 'rgba(20, 110, 180, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'K19.1',
+                    data: [2, 3, 4, 5, 6],
+                    backgroundColor: 'rgba(255, 153, 0, 0.7)',
+                    borderColor: 'rgba(255, 153, 0, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Available',
+                    data: [2, 2, 2, 2, 2],
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'Team Members'
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+    </script>
+</body>
+</html>
