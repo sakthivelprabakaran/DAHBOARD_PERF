@@ -1,0 +1,44 @@
+[
+  {
+    "suite_id": 2,
+    "name": "Time taken to open book",
+    "steps": "1. From home screen, navigate to your library\\n2. Select any book from your library\\n3. Start timing when you tap the book, stop when the book fully opens and content is visible",
+    "n_points": 5
+  },
+  {
+    "suite_id": 2,
+    "name": "Time taken to turn a page",
+    "steps": "1. Open a book\\n2. Locate a page with text\\n3. Start timing when you tap/swipe to turn page, stop when the new page is fully rendered",
+    "n_points": 5
+  },
+  {
+    "suite_id": 2,
+    "name": "Time taken to exit a book",
+    "steps": "1. From within a book, tap the top of the screen to show the menu\\n2. Tap the back arrow to exit to the library",
+    "n_points": 3
+  },
+  {
+    "suite_id": 2,
+    "name": "Time to load library",
+    "steps": "1. From the home screen, tap the 'Library' tab\\n2. Time until all book covers are loaded",
+    "n_points": 5
+  },
+  {
+    "suite_id": 2,
+    "name": "Book download time",
+    "steps": "1. Find a book that is not downloaded\\n2. Tap to download\\n3. Time until the book is fully downloaded and ready to open",
+    "n_points": 8
+  },
+  {
+    "suite_id": 1,
+    "name": "Device boot time",
+    "steps": "1. Power off the device completely\\n2. Press the power button to turn it on\\n3. Time until the home screen is fully loaded and responsive",
+    "n_points": 10
+  },
+  {
+    "suite_id": 1,
+    "name": "WiFi connection time",
+    "steps": "1. Turn off WiFi\\n2. Turn on WiFi\\n3. Time until the device connects to a known network",
+    "n_points": 4
+  }
+]
