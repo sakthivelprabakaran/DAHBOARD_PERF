@@ -4,6 +4,8 @@ let currentTestRun = null;
 let testCasesForRun = [];
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('appLoader').style.display = 'none'; // Hide the loader
+
     // Event Listeners
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
     document.getElementById('themeSwitch').addEventListener('change', toggleTheme);
